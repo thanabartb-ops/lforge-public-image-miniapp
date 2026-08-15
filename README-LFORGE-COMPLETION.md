@@ -1,0 +1,1 @@
+LFORGE Completion Contract surface: consumer flow REFERENCE -> BRIEF -> APPROVAL -> RENDER; LLM Command Engine compiles user intent into a structured production command; provider details remain internal.
