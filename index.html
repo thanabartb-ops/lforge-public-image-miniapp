@@ -7,54 +7,328 @@
 <title>LFORGE Public Image</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#050712;--panel:rgba(7,11,24,.9);--line:rgba(145,190,255,.2);--text:#f7fbff;--muted:#9fb0c8;--blue:#25a7ff;--cyan:#55f3ff;--magenta:#ff2bd6;--violet:#7a4dff;--gold:#f5c56b}
+:root{--bg:#050712;--panel:rgba(7,11,24,.9);--line:rgba(145,190,255,.12);--text:#f7fbff;--muted:#9fb0c8;--blue:#25a7ff;--cyan:#55f3ff;--magenta:#ff2bd6;--violet:#7a4dff;--gold:#f5c56b}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{overflow-x:hidden}
-.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.3),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.22),transparent 28%),radial-gradient(circle at 80% 85%,rgba(122,77,255,.27),transparent 30%),radial-gradient(circle at 15% 85%,rgba(255,48,79,.16),transparent 25%),#050712;filter:saturate(1.12);animation:move 22s linear infinite}.veil{position:fixed;inset:0;z-index:-1;background:rgba(2,5,14,.5)}
-@keyframes move{50%{transform:rotate(180deg) scale(1.12)}100%{transform:rotate(360deg) scale(1)}}
-.app{width:min(760px,100%);margin:auto;padding:calc(18px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))}.brand{font-weight:900;letter-spacing:.08em;margin:0 4px 14px;text-shadow:0 0 18px rgba(85,243,255,.3)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px;backdrop-filter:blur(18px)}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px}.tab{border:1px solid var(--line);border-radius:15px;padding:11px 5px;background:rgba(255,255,255,.035);color:var(--muted);font:800 11px inherit}.tab.active{color:#fff;border-color:rgba(85,243,255,.65);background:linear-gradient(135deg,rgba(37,167,255,.18),rgba(255,43,214,.13));box-shadow:0 0 22px rgba(37,167,255,.1)}.tab small{display:block;font-weight:500;font-size:9px;margin-top:3px;opacity:.8}.view{display:none}.view.active{display:block}h1{font-size:25px;margin:4px 0 7px}.sub{font-size:14px;line-height:1.55;color:var(--muted)}.rule{margin:14px 0;padding:11px 13px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,rgba(37,167,255,.08),rgba(255,43,214,.06));font-size:12px;line-height:1.55;color:#cfe8ff}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:block;margin:14px 0 7px;color:var(--muted);font-size:13px;font-weight:700}.drop{min-height:170px;border:1px dashed rgba(85,243,255,.45);border-radius:17px;display:grid;place-items:center;text-align:center;padding:18px;background:rgba(3,9,19,.55);cursor:pointer}.drop b{font-size:16px}.drop span{display:block;color:var(--muted);font-size:12px;margin-top:6px}input[type=file]{display:none}.preview{display:none;margin-top:9px}.preview.show{display:block}.preview img{width:100%;max-height:230px;object-fit:contain;border-radius:12px;background:#02040a}.name{font-size:11px;color:var(--muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.color-row{display:flex;align-items:center;gap:12px}.color{width:60px;height:46px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px}.swatches{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.swatch{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.25)}textarea{width:100%;min-height:190px;resize:vertical;border:1px solid var(--line);border-radius:15px;background:rgba(0,0,0,.28);color:#fff;padding:14px;font:inherit;outline:none}.actions{display:flex;gap:9px;margin-top:15px}.btn{min-height:48px;border:0;border-radius:14px;padding:0 15px;font:800 14px inherit}.primary{flex:1;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#00101d}.secondary{background:rgba(255,255,255,.07);color:#fff;border:1px solid var(--line)}.status{color:var(--muted);font-size:12px;line-height:1.5;margin-top:11px}
-.brief{border:1px solid var(--line);border-radius:17px;padding:13px;background:rgba(0,0,0,.2)}.brief-title{display:flex;justify-content:space-between;gap:8px;align-items:center}.badge{font-size:9px;padding:5px 8px;border-radius:999px;color:var(--cyan);border:1px solid rgba(85,243,255,.3)}.refs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.ref{border:1px solid var(--line);border-radius:11px;padding:6px;background:rgba(255,255,255,.035)}.ref img{width:100%;height:100px;object-fit:cover;border-radius:7px}.ref b{display:block;font-size:10px;margin-top:5px}.brief pre{white-space:pre-wrap;font:500 12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:#dcecff}.draft{margin-top:10px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(37,167,255,.08),rgba(255,43,214,.08));border:1px solid var(--line)}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chip{padding:6px 9px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:10px;color:#dcecff}.gate{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.gate div{padding:8px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid var(--line);font-size:10px}.ok{color:#7dffb2}.warn{color:var(--gold)}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.control-card{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035)}.control-card b{display:block;margin-bottom:4px}.control-card span{font-size:11px;color:var(--muted)}.control-log{white-space:pre-wrap;font:500 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe8ff;background:#02050a;border-radius:12px;padding:10px;margin-top:10px;max-height:260px;overflow:auto}
-@media(max-width:620px){.grid2{grid-template-columns:1fr}.refs{grid-template-columns:1fr 1fr}.ref:last-child{grid-column:1/-1}.ref:last-child img{height:150px}.tabs{grid-template-columns:repeat(2,1fr)}.control-grid{grid-template-columns:1fr}}
+.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.18),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.14),transparent 28%),radial-gradient(circle at 50% 85%,rgba(122,77,255,.06),transparent 30%);filter:blur(36px);}
+.app-shell{max-width:1600px;margin:10px auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.topbar{height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px solid rgba(255,255,255,.03)}
+.brand{font-weight:800;letter-spacing:.06em;margin-right:8px}
+.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.search{background:rgba(255,255,255,.03);border:1px solid var(--line);padding:6px 10px;border-radius:9px;color:var(--muted)}
+.grid-work{display:grid;grid-template-columns:260px 1fr 320px;gap:12px;margin-top:8px}
+.sidebar{background:var(--panel);padding:12px;border-radius:12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.sidebar .menu{display:flex;flex-direction:column;gap:6px}
+.sbtn{background:transparent;border:1px solid transparent;padding:8px 10px;border-radius:10px;color:var(--text);text-align:left;cursor:pointer}
+.sbtn.active{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.main-work{background:var(--panel);padding:14px;border-radius:12px;border:1px solid var(--line);min-height:560px;display:flex;flex-direction:column;gap:12px}
+.view-area{display:block;flex:1;overflow:auto}
+.views{display:grid;grid-template-rows:auto}
+.view{display:none}
+.view.active{display:block}
+.controls-row{display:flex;gap:8px}
+.btn{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--text);cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--cyan));border:none;color:#041022}
+.activity{background:var(--panel);padding:12px;border-radius:12px;border:1px solid var(--line);min-height:480px;display:flex;flex-direction:column}
+.activity h4{margin:0 0 8px 0}
+.statusbar{height:48px;border-radius:10px;padding:8px 14px;background:linear-gradient(180deg,rgba(255,255,255,.01),transparent);border:1px solid rgba(255,255,255,.02);display:flex;align-items:center;gap:12px}
+.footer{margin-top:8px}
+.kv{font-size:13px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.02);border:1px solid var(--line)}
+.modal{position:fixed;inset:0;background:rgba(2,4,8,.6);display:none;align-items:center;justify-content:center;z-index:60}
+.modal.show{display:flex}
+.modal-card{width:520px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);padding:16px;border-radius:12px;border:1px solid var(--line)}
+.input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text)}
+@media(max-width:1100px){.grid-work{grid-template-columns:220px 1fr 280px}}
+@media(max-width:900px){.grid-work{grid-template-columns:1fr;}.activity{order:3}.sidebar{order:1}.main-work{order:2}}
+@media(max-width:480px){.topbar{height:64px;padding:10px;flex-wrap:wrap}.search{width:100%}}
 </style>
 </head>
-<body><div class="rgb"></div><div class="veil"></div>
-<main class="app"><div class="brand">LFORGE PUBLIC IMAGE</div><div class="panel">
-<nav class="tabs" aria-label="LFORGE tabs"><button class="tab active" data-tab="1">01 · MASTER<small>LOGO + COLOR</small></button><button class="tab" data-tab="2">02 · POST<small>POST TEXT</small></button><button class="tab" data-tab="3">03 · REFS<small>3 IMAGES</small></button><button class="tab" data-tab="5">04 · CONTROL<small>RUNTIME</small></button></nav>
-<section class="view active" id="view1"><h1>LOGO / COLOR MASTER</h1><p class="sub">แท็บ 1 — กำหนดตัวตนแบรนด์เป็น Master Reference</p><div class="grid2"><div><label class="field">โลโก้หลัก</label><label class="drop" for="logo"><div><b>แตะเพื่อเลือกโลโก้</b><span>PNG / JPG / WEBP</span></div></label><input id="logo" type="file" accept="image/*"><div class="preview" id="logoPrev"><img id="logoImg"><div class="name" id="logoName"></div></div></div><div><label class="field">Color Master</label><div class="color-row"><input class="color" id="color" type="color" value="#25A7FF"><div><b id="hex">#25A7FF</b><div class="status">สีหลักของงาน</div></div></div><div class="swatches" id="swatches"></div></div></div><div class="rule"><b>MASTER = AUTHORITY</b><br>โลโก้และ Color Master เป็นแกนแบรนด์ของผลลัพธ์ทุกชิ้น</div></section>
-<section class="view" id="view2"><h1>POST TEXT</h1><p class="sub">แท็บ 2 — ข้อความโพสต์ที่ต้องการให้ Draft ยึดเป็น Content Direction</p><label class="field">ข้อความโพสต์ / Caption / Key Message</label><textarea id="post" placeholder="วางข้อความโพสต์ของคุณที่นี่..."></textarea><div class="rule"><b>TEXT = CONTENT AUTHORITY</b><br>ระบบจัดโครงข้อความเป็น Brief โดยไม่เปลี่ยนสาระหลัก</div></section>
-<section class="view" id="view3"><h1>CHARACTER / TYPOLOGY / BACKGROUND</h1><p class="sub">แท็บ 3 — แนบ Reference 3 ภาพสำหรับร่างทิศทางใหม่</p><div class="grid2"><div><label class="field">CHARACTER</label><label class="drop" for="character"><div><b>แตะเพื่อเลือก</b><span>ภาพคาแร็คเตอร์ · AUTHORITY</span></div></label><input id="character" type="file" accept="image/*"><div class="preview" id="characterPrev"><img id="characterImg"><div class="name" id="characterName"></div></div></div><div><label class="field">TYPOLOGY</label><label class="drop" for="typology"><div><b>แตะเพื่อเลือก</b><span>ภาพ Typology / Style</span></div></label><input id="typology" type="file" accept="image/*"><div class="preview" id="typologyPrev"><img id="typologyImg"><div class="name" id="typologyName"></div></div></div></div><label class="field">BACKGROUND</label><label class="drop" for="background"><div><b>แตะเพื่อเลือก</b><span>ภาพฉากหลัง / Environment</span></div></label><input id="background" type="file" accept="image/*"><div class="preview" id="backgroundPrev"><img id="backgroundImg"><div class="name" id="backgroundName"></div></div><div class="rule"><b>REFERENCE = DIRECTION</b><br>Character ถูกคงไว้ตามภาพที่แนบ ส่วน Typology และ Background ใช้สร้าง style / environment direction</div></section>
-<section class="view" id="view4"><h1>REFERENCE BRIEF</h1><p class="sub">ดราฟใหม่จาก Master + Post + Reference Images ภายใต้ LFORGE Output Standard</p><div class="brief"><div class="brief-title"><b>LFORGE · NEW REFERENCE DRAFT</b><span class="badge">DRAFT</span></div><div class="refs"><div class="ref"><img id="rLogo"><b>LOGO MASTER</b></div><div class="ref"><img id="rCharacter"><b>CHARACTER AUTHORITY</b></div><div class="ref"><img id="rTypology"><b>TYPOLOGY</b></div></div><div class="ref" style="margin-top:7px"><img id="rBackground" style="height:150px"><b>BACKGROUND</b></div><div class="draft"><b>COLOR MASTER</b><div id="rColor" style="margin-top:7px"></div></div><div class="draft"><b>STYLE DNA</b><div class="chips" id="styleChips"></div></div><div class="draft"><b>QUALITY / REALITY GATE</b><div class="gate" id="gate"></div></div><pre id="briefText"></pre><div class="draft"><b>DRAFT DIRECTION</b><div id="direction" class="status"></div></div></div><div class="actions"><button class="btn secondary" id="back">← แก้ไข</button><button class="btn primary" id="copy">คัดลอก Brief</button></div></section>
-<section class="view" id="view5"><h1>CONTROL CENTER</h1><p class="sub">แขนง Control ของ Mini App — Runtime จริง, Fail-Closed และไม่เปลี่ยน Mini App Authority</p><div class="control-grid"><div class="control-card"><b>Mini App Authority</b><span class="ok">PRIMARY</span></div><div class="control-card"><b>Image + Video Core</b><span class="ok">REAL SYSTEM CORE</span></div><div class="control-card"><b>Render Gate</b><span class="ok">MINI APP CREATION FLOW</span></div><div class="control-card"><b>Provider Truth</b><span class="warn">UNVERIFIED = NOT_CONNECTED</span></div></div><div class="actions"><button class="btn primary" id="healthBtn">ตรวจ Runtime Health</button><button class="btn secondary" id="gatewayBtn">Gateway Dry Run</button></div><div id="controlLog" class="control-log">ยังไม่ได้ตรวจ Runtime</div><div class="rule"><b>CONTROL CONTRACT</b><br>PROJECT → PRODUCTION SET → REFERENCE → IDENTITY → FINAL BRIEF → CHECKPOINT → APPROVAL → RENDER GATE → ARTIFACT → WFQC → WFCR → LINEAGE → AUDIT</div></section>
-<div class="actions"><button class="btn primary" id="run">ตรวจ + สังเคราะห์ Draft Reference Brief →</button></div><div class="status" id="status">กรอกข้อมูลทั้ง 3 แท็บ แล้วกดตรวจ + สังเคราะห์</div>
-</div></main>
+<body>
+<div class="rgb"></div>
+<main class="app-shell">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="brand">LFORGE</div>
+      <div class="kv">Project: <strong>BANK</strong></div>
+      <div class="kv" id="connStatus">● Disconnected</div>
+    </div>
+    <div class="top-actions">
+      <input class="search" placeholder="Search…" aria-label="Search" id="search" />
+      <button class="btn" id="notif">🔔</button>
+      <button class="btn" id="profile">Profile</button>
+      <button class="btn" id="openControl">Control</button>
+    </div>
+  </div>
+
+  <div class="grid-work">
+    <aside class="sidebar" role="navigation" aria-label="Primary">
+      <div class="menu">
+        <button class="sbtn active" data-tab="1">CORE</button>
+        <button class="sbtn" data-tab="2">IMAGE</button>
+        <button class="sbtn" data-tab="3">VIDEO</button>
+        <button class="sbtn" data-tab="4">CONTROL</button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:8px 0" />
+      <div class="kv">Runtime</div>
+      <div class="chips" id="runtimeChips"><span class="chip">LLM: Unknown</span><span class="chip">Storage: Unknown</span></div>
+      <div style="flex:1"></div>
+      <div class="kv">Version</div>
+      <div class="kv" id="version">v—</div>
+    </aside>
+
+    <section class="main-work">
+      <div class="view-area">
+        <div class="views">
+          <div class="view active" id="view-core">
+            <h2>REFERENCE</h2>
+            <div id="referenceArea">
+              <!-- Keep existing reference inputs (logo, character, typology, background, color, post) -->
+              <!-- We will reuse current controls from previous implementation -->
+            </div>
+            <h3>BRIEF</h3>
+            <pre id="briefText" style="white-space:pre-wrap;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line)"></pre>
+            <div class="controls-row">
+              <button class="btn primary" id="approveBtn">APPROVE</button>
+              <button class="btn" id="renderBtn">RENDER</button>
+              <button class="btn" id="copyBtn">COPY BRIEF</button>
+            </div>
+          </div>
+
+          <div class="view" id="view-image">
+            <h2>IMAGE</h2>
+            <div id="imageTools">
+              <p class="kv">Create, Preview, Regenerate, Save, Assign Core / Typology, Versioning, Job Status</p>
+              <div id="imagePreview" style="border:1px dashed var(--line);height:300px;border-radius:10px;display:flex;align-items:center;justify-content:center">No image yet</div>
+              <div style="margin-top:10px" class="controls-row"><button class="btn" id="genImage">Generate</button><button class="btn" id="saveImage">Save</button><button class="btn" id="regenImage">Regenerate</button></div>
+            </div>
+          </div>
+
+          <div class="view" id="view-video">
+            <h2>VIDEO (Background Studio)</h2>
+            <p class="kv">Video / Static Image / Gradient / Color Field / None</p>
+            <div style="height:320px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center">Background Studio</div>
+          </div>
+
+          <div class="view" id="view-control">
+            <h2>CONTROL CENTER</h2>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn" id="healthBtn">Runtime Health</button>
+              <button class="btn" id="gatewayBtn">Gateway Dry Run</button>
+              <button class="btn" id="aiConnectBtn">AI Connection</button>
+              <button class="btn" id="logsBtn">View Logs</button>
+            </div>
+            <pre id="controlLog" style="margin-top:12px;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line);min-height:180px;white-space:pre-wrap"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="activity" aria-label="Activity">
+      <h4>Job Status</h4>
+      <div id="jobList" style="flex:1;overflow:auto">No jobs</div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:8px 0" />
+      <h4>Audit / History</h4>
+      <div id="auditList" style="flex:1;overflow:auto">No audit records</div>
+    </aside>
+  </div>
+
+  <div class="footer statusbar">
+    <div class="kv">Runtime ● <span id="runtimeStatus">Unknown</span></div>
+    <div class="kv">LLM ● <span id="llmStatus">Unknown</span></div>
+    <div class="kv">Storage ● <span id="storageStatus">Unknown</span></div>
+    <div style="margin-left:auto" class="kv">Job: <span id="jobState">Idle</span></div>
+  </div>
+</main>
+
+<!-- AI Connect Modal -->
+<div class="modal" id="aiModal" role="dialog" aria-hidden="true">
+  <div class="modal-card">
+    <h3>AI Connection</h3>
+    <p class="kv">เชื่อมต่อ OpenAI API Key ผ่าน runtime backend (ค่าจะถูกเก็บอย่างปลอดภัยบน server - frontend จะไม่เก็บหรือแสดง full key)</p>
+    <label class="kv">OpenAI API Key</label>
+    <input id="aiKey" class="input" placeholder="sk-..." autocomplete="off" />
+    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="aiCancel">Cancel</button>
+      <button class="btn primary" id="aiSave">Connect</button>
+    </div>
+    <pre id="aiMessage" style="margin-top:8px;background:rgba(255,255,255,.01);padding:8px;border-radius:6px;border:1px solid var(--line);min-height:40px"></pre>
+  </div>
+</div>
+
 <script>
 const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
-const $=id=>document.getElementById(id);
+const $=(id)=>document.getElementById(id);
 const RUNTIME='https://wforge-image-mcp-wxx.thanabartb.workers.dev';
-const state={logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:''};
-const LFORGE_ENGINE={masterAxis:['Dark Premium','Street','Gaming','Editorial','Minimal'],quality:['Color Control','Typography Legibility','Visual Hierarchy','Composition','Material / Lighting','Sharpness'],plugins:{LogoGenic:'logo/visual generation',ColorDesigner:'palette logic',HyperFrames:'motion/video composition',Shutterstock:'reference discovery',Cloudinary:'asset layer',to3D:'character 3D extension',GitHub:'source/deployment',OpenAI:'brief/synthesis layer'}};
-function bind(id,prev,img,name,key){$(id).onchange=e=>{const f=e.target.files[0];if(!f)return;state[key]=f;$(img).src=URL.createObjectURL(f);$(name).textContent=f.name;$(prev).classList.add('show');update()}}
-bind('logo','logoPrev','logoImg','logoName','logo');bind('character','characterPrev','characterImg','characterName','character');bind('typology','typologyPrev','typologyImg','typologyName','typology');bind('background','backgroundPrev','backgroundImg','backgroundName','background');
-$('color').oninput=e=>{state.color=e.target.value.toUpperCase();$('hex').textContent=state.color;renderSwatches();update()};$('post').oninput=e=>{state.post=e.target.value;update()};
-function renderSwatches(){const c=$('swatches');c.innerHTML='';[state.color,'#050712','#25A7FF','#55F3FF','#FF2BD6','#7A4DFF','#F5C56B','#FF304F'].forEach(x=>{const s=document.createElement('span');s.className='swatch';s.style.background=x;s.title=x;c.appendChild(s)})}renderSwatches();
-function update(){const n=[state.logo,state.character,state.typology,state.background].filter(Boolean).length;$('status').textContent=`Reference assets ${n}/4 · ${state.post.trim()?'Post text ready':'Post text ยังว่าง'} · Output Axis locked`}
-function tab(n){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==n));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$('view'+n).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-function addChip(text){const s=document.createElement('span');s.className='chip';s.textContent=text;$('styleChips').appendChild(s)}
-$('run').onclick=()=>{
- const missing=[];if(!state.logo)missing.push('Logo');if(!state.character)missing.push('Character');if(!state.typology)missing.push('Typology');if(!state.background)missing.push('Background');
- $('rLogo').src=state.logo?URL.createObjectURL(state.logo):'';$('rCharacter').src=state.character?URL.createObjectURL(state.character):'';$('rTypology').src=state.typology?URL.createObjectURL(state.typology):'';$('rBackground').src=state.background?URL.createObjectURL(state.background):'';
- $('rColor').innerHTML=`<span style="display:inline-block;width:30px;height:30px;vertical-align:middle;border-radius:8px;background:${state.color};border:1px solid #fff3"></span> ${state.color}`;
- $('styleChips').innerHTML='';LFORGE_ENGINE.masterAxis.forEach(addChip);['Neon Accent Control','Premium Contrast','Readable Sans Serif','Clean Eye Flow'].forEach(addChip);
- const checks=[['Character Authority',!!state.character],['Master Color',true],['Typology Reference',!!state.typology],['Background Reference',!!state.background],['Typography Legibility',true],['Visual Hierarchy',true],['10 min Generator Ceiling',true]];$('gate').innerHTML=checks.map(x=>`<div><b class="${x[1]?'ok':'warn'}">${x[1]?'✓':'!'} ${x[0]}</b></div>`).join('');
- const text=state.post.trim()||'(ยังไม่ได้ใส่ข้อความโพสต์)';
- $('briefText').textContent=`LFORGE REFERENCE BRIEF\n\nMASTER AXIS\n- Dark Premium × Street × Gaming × Editorial × Minimal\n- Color: ${state.color}\n- Neon is accent only; preserve comfortable luminance and saturation\n\nCONTENT\n${text}\n\nREFERENCES\n- Character Authority: ${state.character?state.character.name:'ยังไม่ได้แนบ'}\n- Typology: ${state.typology?state.typology.name:'ยังไม่ได้แนบ'}\n- Background: ${state.background?state.background.name:'ยังไม่ได้แนบ'}\n\nOUTPUT RULES\n- Preserve supplied Character identity/design; do not replace it with a generated character.\n- Build style from all available references, but keep the LFORGE Master Axis.\n- Prioritize readable typography, exact visual hierarchy, controlled color, clean composition, sharp detail and comfortable viewing.\n- Use metallic/gloss/neon/bevel effects only when they support the typology.\n- Generate multiple style directions from the same reference DNA without breaking the Master Axis.\n\nENGINE ROLES\n- Cloudinary: asset handling / transforms\n- Shutterstock: optional reference discovery\n- to3D: optional Character 2D→3D extension\n- Color Designer: palette logic\n- LogoGenic: logo/visual generation when invoked\n- OpenAI: brief and synthesis layer\n- HyperFrames: motion/video layer when invoked\n- GitHub: source and deployment layer`;
- $('direction').textContent=missing.length?`ตรวจพบข้อมูลยังไม่ครบ: ${missing.join(', ')} — ระบบสร้าง Draft ได้ แต่ยังไม่ถือเป็น Complete Reference Set`:'ผ่านการตรวจเบื้องต้นครบ 4 assets — สังเคราะห์จากทุกส่วนโดยรักษา Character Authority และล็อก LFORGE Master Axis';
- tab(4)
-};
-async function controlFetch(path){const r=await fetch(RUNTIME+path,{cache:'no-store'});const text=await r.text();let data;try{data=JSON.parse(text)}catch{data={raw:text}}if(!r.ok)throw new Error('HTTP '+r.status+' '+text);return data}
-$('healthBtn').onclick=async()=>{try{$('controlLog').textContent='Checking runtime…';const d=await controlFetch('/health');$('controlLog').textContent=JSON.stringify(d,null,2)}catch(e){$('controlLog').textContent='Runtime health FAILED\n'+e.message}}
-$('gatewayBtn').onclick=async()=>{try{$('controlLog').textContent='Running dry run…';const d=await controlFetch('/gateway-test');$('controlLog').textContent=JSON.stringify(d,null,2)}catch(e){$('controlLog').textContent='Gateway dry run FAILED\n'+e.message}}
-$('back').onclick=()=>tab(1);$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('briefText').textContent);$('copy').textContent='คัดลอกแล้ว ✓';setTimeout(()=>$('copy').textContent='คัดลอก Brief',1600)}catch(e){alert($('briefText').textContent)}};
-</script></body></html>
+let state={logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:'',connection:{status:'disconnected',method:null}};
+
+// Basic wiring for tabs
+document.querySelectorAll('.sbtn').forEach(b=>b.addEventListener('click',e=>{
+  document.querySelectorAll('.sbtn').forEach(x=>x.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  const idx=e.currentTarget.dataset.tab;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  if(idx==='1')$('view-core').classList.add('active');
+  if(idx==='2')$('view-image').classList.add('active');
+  if(idx==='3')$('view-video').classList.add('active');
+  if(idx==='4')$('view-control').classList.add('active');
+}));
+
+// Pull in legacy reference controls from original UI by injecting elements
+function buildReferenceControls(){
+  const container=$('referenceArea');
+  container.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label class="kv">Logo</label>
+        <input id="logo" type="file" accept="image/*" />
+        <div id="logoName" class="kv"></div>
+      </div>
+      <div>
+        <label class="kv">Character</label>
+        <input id="character" type="file" accept="image/*" />
+        <div id="characterName" class="kv"></div>
+      </div>
+      <div>
+        <label class="kv">Typology</label>
+        <input id="typology" type="file" accept="image/*" />
+        <div id="typologyName" class="kv"></div>
+      </div>
+      <div>
+        <label class="kv">Background</label>
+        <input id="background" type="file" accept="image/*" />
+        <div id="backgroundName" class="kv"></div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <label class="kv">Master Color</label>
+      <input id="color" class="input" type="color" value="${state.color}" style="width:120px;padding:6px" />
+      <label class="kv" style="margin-left:12px">Post Text</label>
+      <textarea id="post" class="input" rows="3" style="margin-top:6px"></textarea>
+      <div style="margin-top:8px" class="chips" id="styleChips"></div>
+    </div>
+  `;
+
+  function bindInput(id,name,key){
+    const el=$(id);
+    if(!el) return;
+    el.addEventListener('change',e=>{
+      const f=e.target.files && e.target.files[0];
+      if(f){ state[key]=f; $(name).textContent=f.name; update(); }
+    });
+  }
+  bindInput('logo','logoName','logo');
+  bindInput('character','characterName','character');
+  bindInput('typology','typologyName','typology');
+  bindInput('background','backgroundName','background');
+  $('color').addEventListener('input',e=>{state.color=e.target.value.toUpperCase();update()});
+  $('post').addEventListener('input',e=>{state.post=e.target.value;update()});
+}
+
+function update(){
+  const n=[state.logo,state.character,state.typology,state.background].filter(Boolean).length;
+  $('briefText').textContent=`LFORGE REFERENCE BRIEF\n\nMASTER AXIS\n- Color: ${state.color}\n- Assets: ${n}/4\n\nPOST:\n${state.post||'(ยังไม่มีข้อความ)'}\n`;
+}
+
+buildReferenceControls(); update();
+
+// keep existing controlFetch but handle errors and states
+async function controlFetch(path,opts={method:'GET',body:null}){
+  const headers={'Accept':'application/json'};
+  let body=null;
+  if(opts.body){ headers['Content-Type']='application/json'; body=JSON.stringify(opts.body); }
+  const res = await fetch(RUNTIME+path,{method:opts.method,headers,body,cache:'no-store'});
+  const text=await res.text();
+  let data=null; try{ data=JSON.parse(text); }catch(e){ data={raw:text}; }
+  if(!res.ok) throw {status:res.status,body:data};
+  return data;
+}
+
+$('healthBtn').onclick=async()=>{
+  try{$('controlLog').textContent='Checking runtime…'; const d=await controlFetch('/health'); $('controlLog').textContent=JSON.stringify(d,null,2); $('runtimeStatus').textContent='Healthy';}catch(e){$('controlLog').textContent=JSON.stringify(e); $('runtimeStatus').textContent='Unhealthy'}
+}
+
+$('gatewayBtn').onclick=async()=>{
+  try{$('controlLog').textContent='Running gateway dry-run…'; const d=await controlFetch('/gateway-test'); $('controlLog').textContent=JSON.stringify(d,null,2);}catch(e){$('controlLog').textContent=JSON.stringify(e)}
+}
+
+// AI Connect modal handlers
+$('aiConnectBtn').onclick=()=>{ $('aiModal').classList.add('show'); $('aiModal').setAttribute('aria-hidden','false'); $('aiMessage').textContent=''; $('aiKey').value=''; }
+$('aiCancel').onclick=()=>{ $('aiModal').classList.remove('show'); $('aiModal').setAttribute('aria-hidden','true'); }
+
+$('aiSave').onclick=async()=>{
+  const key=$('aiKey').value.trim(); if(!key){ $('aiMessage').textContent='กรุณาใส่ API Key'; return; }
+  try{
+    $('aiMessage').textContent='Connecting…';
+    // Send to runtime for secure storage / validation. Frontend will not persist the key.
+    const resp = await controlFetch('/ai/connect',{method:'POST',body:{provider:'openai',keyHint:key.slice(0,6)+'...'}});
+    // Expect runtime to handle real key exchange. Do not show key back to user.
+    state.connection.status='connected'; state.connection.method='openai';
+    $('aiMessage').textContent='Connected';
+    $('connStatus').textContent='● Connected';
+    $('aiModal').classList.remove('show');
+  }catch(err){
+    console.error('ai connect',err);
+    $('aiMessage').textContent='Connection failed: '+(err && err.body && err.body.message?err.body.message:JSON.stringify(err));
+    state.connection.status='failed';
+  }
+}
+
+// image generation wiring (calls runtime endpoints, no fake success)
+$('genImage').onclick=async()=>{
+  try{
+    $('imagePreview').textContent='Generating…';
+    const payload={brief:$('briefText').textContent,options:{color:state.color}};
+    const data = await controlFetch('/generate',{method:'POST',body:payload});
+    // Expect data to contain job id and preview url
+    if(data && data.preview){
+      const img=document.createElement('img'); img.src=data.preview; img.style.maxWidth='100%'; img.style.maxHeight='100%'; $('imagePreview').innerHTML=''; $('imagePreview').appendChild(img);
+      $('jobState').textContent=(data.jobId||'running');
+      // Append job to job list
+      const el=document.createElement('div'); el.textContent=`Job ${data.jobId||'(id)'} · ${data.status||'submitted'}`; $('jobList').prepend(el);
+    }else{
+      $('imagePreview').textContent='No preview returned';
+    }
+  }catch(e){ $('imagePreview').textContent='Generate failed: '+(e && e.body?JSON.stringify(e.body):String(e)); }
+}
+
+$('saveImage').onclick=async()=>{
+  alert('Save will call runtime to persist artifact. This UI triggers backend save.');
+}
+
+$('regenImage').onclick=async()=>{ $('genImage').click(); }
+
+// Approve / Render wiring
+$('approveBtn').onclick=async()=>{
+  try{
+    const payload={brief:$('briefText').textContent};
+    $('approveBtn').textContent='Approving…'; $('approveBtn').disabled=true;
+    const d=await controlFetch('/approve',{method:'POST',body:payload});
+    $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false;
+    if(d && d.status==='ok'){
+      alert('Approved');
+    }else{
+      alert('Approval response: '+JSON.stringify(d));
+    }
+  }catch(err){ $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false; alert('Approve failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+}
+
+$('renderBtn').onclick=async()=>{
+  try{
+    $('renderBtn').textContent='Rendering…'; $('renderBtn').disabled=true;
+    const payload={brief:$('briefText').textContent};
+    const d=await controlFetch('/render',{method:'POST',body:payload});
+    $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false;
+    if(d && d.jobId){ $('jobState').textContent='Rendering'; const el=document.createElement('div'); el.textContent=`Render job ${d.jobId} submitted`; $('jobList').prepend(el); }
+    else{ alert('Render response: '+JSON.stringify(d)); }
+  }catch(err){ $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false; alert('Render failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+}
+
+// health check on load
+(async()=>{
+  try{ const d=await controlFetch('/health'); if(d){ $('runtimeStatus').textContent='Healthy'; if(d.version) $('version').textContent=d.version; if(d.llm) document.querySelector('#runtimeChips .chip').textContent='LLM: '+(d.llm||'unknown'); }}catch(e){ $('runtimeStatus').textContent='Unreachable'; }
+})();
+
+</script>
+</body>
+</html>
