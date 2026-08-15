@@ -9,9 +9,9 @@
 <style>
 :root{--bg:#050712;--panel:rgba(7,11,24,.9);--line:rgba(145,190,255,.12);--text:#f7fbff;--muted:#9fb0c8;--blue:#25a7ff;--cyan:#55f3ff;--magenta:#ff2bd6;--violet:#7a4dff;--gold:#f5c56b}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{overflow-x:hidden}
-.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.18),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.14),transparent 28%),radial-gradient(circle at 50% 85%,rgba(122,77,255,.06),transparent 30%);filter:blur(36px);}
+.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.18),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.14),transparent 28%)}
 .app-shell{max-width:1600px;margin:10px auto;padding:14px;display:flex;flex-direction:column;gap:12px}
-.topbar{height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px solid rgba(255,255,255,.03)}
+.topbar{height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px solid rgba(255,255,255,.02)}
 .brand{font-weight:800;letter-spacing:.06em;margin-right:8px}
 .top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 .search{background:rgba(255,255,255,.03);border:1px solid var(--line);padding:6px 10px;border-radius:9px;color:var(--muted)}
@@ -51,7 +51,8 @@
     <div style="display:flex;align-items:center;gap:10px">
       <div class="brand">LFORGE</div>
       <div class="kv">Project: <strong>BANK</strong></div>
-      <div class="kv" id="connStatus">● Disconnected</div>
+      <!-- Connection status moved to CONTROL per UI requirements -->
+      <div class="kv" id="connStatus" style="display:none">● Disconnected</div>
     </div>
     <div class="top-actions">
       <input class="search" placeholder="Search…" aria-label="Search" id="search" />
@@ -84,15 +85,33 @@
             <h2>REFERENCE</h2>
             <div id="referenceArea">
               <!-- Keep existing reference inputs (logo, character, typology, background, color, post) -->
-              <!-- We will reuse current controls from previous implementation -->
             </div>
-            <h3>BRIEF</h3>
-            <pre id="briefText" style="white-space:pre-wrap;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line)"></pre>
-            <div class="controls-row">
-              <button class="btn primary" id="approveBtn">APPROVE</button>
-              <button class="btn" id="renderBtn">RENDER</button>
+            <h3>BRIEF (Natural Language)</h3>
+            <!-- Natural language brief input. Must be filled by user. -->
+            <textarea id="nlBrief" class="input" rows="5" placeholder="Describe what you want in natural language (Thai or English). Do not rely on auto-generated text."></textarea>
+            <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+              <button class="btn primary" id="compileBtn">COMPILE COMMAND</button>
+              <div class="kv">Status: <span id="compileStatus">Idle</span></div>
+            </div>
+
+            <h3 style="margin-top:12px">GENERATED COMMAND SUMMARY</h3>
+            <pre id="commandSummary" style="white-space:pre-wrap;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line);min-height:120px">No command compiled yet</pre>
+
+            <h3>APPROVAL TARGET</h3>
+            <div id="approvalTarget" style="white-space:pre-wrap;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line);min-height:60px">Not available</div>
+
+            <div class="controls-row" style="margin-top:8px">
+              <button class="btn" id="approveBtn" disabled>APPROVE</button>
+              <button class="btn" id="renderBtn" disabled>RENDER</button>
               <button class="btn" id="copyBtn">COPY BRIEF</button>
             </div>
+
+            <h3 style="margin-top:12px">SOURCE IMAGE</h3>
+            <div id="sourceImage" style="border:1px dashed var(--line);height:140px;border-radius:10px;display:flex;align-items:center;justify-content:center">No source selected</div>
+
+            <h3 style="margin-top:12px">RENDER STATUS</h3>
+            <div id="renderStatus" class="kv">Idle</div>
+
           </div>
 
           <div class="view" id="view-image">
@@ -118,6 +137,13 @@
               <button class="btn" id="aiConnectBtn">AI Connection</button>
               <button class="btn" id="logsBtn">View Logs</button>
             </div>
+            <h4 style="margin-top:12px">Connection / Runtime Diagnostics</h4>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+              <div class="kv">Runtime: <strong id="runtimeStatus">Unknown</strong></div>
+              <div class="kv">LLM: <strong id="llmStatus">Unknown</strong></div>
+              <div class="kv">Storage: <strong id="storageStatus">Unknown</strong></div>
+              <div class="kv">Connection: <strong id="connectionDetail">Disconnected</strong></div>
+            </div>
             <pre id="controlLog" style="margin-top:12px;background:rgba(255,255,255,.01);padding:10px;border-radius:8px;border:1px solid var(--line);min-height:180px;white-space:pre-wrap"></pre>
           </div>
         </div>
@@ -134,9 +160,9 @@
   </div>
 
   <div class="footer statusbar">
-    <div class="kv">Runtime ● <span id="runtimeStatus">Unknown</span></div>
-    <div class="kv">LLM ● <span id="llmStatus">Unknown</span></div>
-    <div class="kv">Storage ● <span id="storageStatus">Unknown</span></div>
+    <div class="kv">Runtime ● <span id="runtimeStatusFooter" style="display:none">Unknown</span></div>
+    <div class="kv">LLM ● <span id="llmStatusFooter" style="display:none">Unknown</span></div>
+    <div class="kv">Storage ● <span id="storageStatusFooter" style="display:none">Unknown</span></div>
     <div style="margin-left:auto" class="kv">Job: <span id="jobState">Idle</span></div>
   </div>
 </main>
@@ -145,7 +171,7 @@
 <div class="modal" id="aiModal" role="dialog" aria-hidden="true">
   <div class="modal-card">
     <h3>AI Connection</h3>
-    <p class="kv">เชื่อมต่อ OpenAI API Key ผ่าน runtime backend (ค่าจะถูกเก็บอย่างปลอดภัยบน server - frontend จะไม่เก็บหรือแสดง full key)</p>
+    <p class="kv">เชื่อมต่อ OpenAI API Key ผ่าน runtime backend (ค่าจะถูกเก็บอย่างปลอดภัยบน server - frontend จะไม่เก็บ)</p>
     <label class="kv">OpenAI API Key</label>
     <input id="aiKey" class="input" placeholder="sk-..." autocomplete="off" />
     <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
@@ -156,11 +182,12 @@
   </div>
 </div>
 
+<script src="llm-command-engine.js"></script>
 <script>
 const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
 const $=(id)=>document.getElementById(id);
 const RUNTIME='https://wforge-image-mcp-wxx.thanabartb.workers.dev';
-let state={logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:'',connection:{status:'disconnected',method:null}};
+let state={logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:'',connection:{status:'disconnected',method:null},compiledCommand:null,compileBlocked:false};
 
 // Basic wiring for tabs
 document.querySelectorAll('.sbtn').forEach(b=>b.addEventListener('click',e=>{
@@ -214,7 +241,7 @@ function buildReferenceControls(){
     if(!el) return;
     el.addEventListener('change',e=>{
       const f=e.target.files && e.target.files[0];
-      if(f){ state[key]=f; $(name).textContent=f.name; update(); }
+      if(f){ state[key]=f; $(name).textContent=f.name; update(); showSourceImage(); }
     });
   }
   bindInput('logo','logoName','logo');
@@ -225,9 +252,23 @@ function buildReferenceControls(){
   $('post').addEventListener('input',e=>{state.post=e.target.value;update()});
 }
 
+function showSourceImage(){
+  const container=$('sourceImage');
+  container.innerHTML='';
+  const files=[state.logo,state.character,state.typology,state.background].filter(Boolean);
+  if(files.length===0){ container.textContent='No source selected'; return; }
+  const f=files[0];
+  const img=document.createElement('img');
+  img.style.maxHeight='120px'; img.style.maxWidth='100%';
+  img.alt=f.name||'source';
+  try{ img.src=URL.createObjectURL(f); }catch(e){ img.alt='(preview unavailable)'; }
+  container.appendChild(img);
+}
+
 function update(){
+  // Show a simple reference summary (not a generated NL brief). NL brief must be provided by user.
   const n=[state.logo,state.character,state.typology,state.background].filter(Boolean).length;
-  $('briefText').textContent=`LFORGE REFERENCE BRIEF\n\nMASTER AXIS\n- Color: ${state.color}\n- Assets: ${n}/4\n\nPOST:\n${state.post||'(ยังไม่มีข้อความ)'}\n`;
+  // Keep briefText behaviour removed — user must enter NL brief in textarea
 }
 
 buildReferenceControls(); update();
@@ -244,47 +285,104 @@ async function controlFetch(path,opts={method:'GET',body:null}){
   return data;
 }
 
-$('healthBtn').onclick=async()=>{
-  try{$('controlLog').textContent='Checking runtime…'; const d=await controlFetch('/health'); $('controlLog').textContent=JSON.stringify(d,null,2); $('runtimeStatus').textContent='Healthy';}catch(e){$('controlLog').textContent=JSON.stringify(e); $('runtimeStatus').textContent='Unhealthy'}
-}
+// LFORGE command compile flow: call external LLM Command Service (server-side only endpoint provided)
+async function compileCommand(){
+  const nl = $('nlBrief').value.trim();
+  if(!nl){ alert('กรุณาเขียน Natural Language Brief ก่อน (BRIEF)'); return; }
 
-$('gatewayBtn').onclick=async()=>{
-  try{$('controlLog').textContent='Running gateway dry-run…'; const d=await controlFetch('/gateway-test'); $('controlLog').textContent=JSON.stringify(d,null,2);}catch(e){$('controlLog').textContent=JSON.stringify(e)}
-}
+  $('compileStatus').textContent='Compiling…';
+  $('commandSummary').textContent='Compiling command…';
+  state.compiledCommand=null; state.compileBlocked=false;
 
-// AI Connect modal handlers
-$('aiConnectBtn').onclick=()=>{ $('aiModal').classList.add('show'); $('aiModal').setAttribute('aria-hidden','false'); $('aiMessage').textContent=''; $('aiKey').value=''; }
-$('aiCancel').onclick=()=>{ $('aiModal').classList.remove('show'); $('aiModal').setAttribute('aria-hidden','true'); }
+  // Prepare references: include basic metadata and attempt to include small inline data URLs for clarity
+  const refs = [];
+  const files = [{k:'logo',f:state.logo},{k:'character',f:state.character},{k:'typology',f:state.typology},{k:'background',f:state.background}];
+  for(const it of files){ if(it.f){ refs.push({name:it.f.name,type:it.f.type||'image',role:it.k}); } }
 
-$('aiSave').onclick=async()=>{
-  const key=$('aiKey').value.trim(); if(!key){ $('aiMessage').textContent='กรุณาใส่ API Key'; return; }
+  // Build payload using engine helper if available
+  const endpoint = (window.LFORGECommandEngine && window.LFORGECommandEngine.endpoint) ? window.LFORGECommandEngine.endpoint : 'https://gkzyymcxjgpuflnnbocd.supabase.co/functions/v1/lforge-command';
+  const compilePayload = (window.LFORGECommandEngine && window.LFORGECommandEngine.compilePayload) ? window.LFORGECommandEngine.compilePayload({request:nl,references:refs,identity:'',color:state.color,output:'image',backgroundStudio:''}) : {user_request:nl,references:refs,identity:'',color:state.color,output:'image',background_studio:''};
+
   try{
-    $('aiMessage').textContent='Connecting…';
-    // Send to runtime for secure storage / validation. Frontend will not persist the key.
-    const resp = await controlFetch('/ai/connect',{method:'POST',body:{provider:'openai',keyHint:key.slice(0,6)+'...'}});
-    // Expect runtime to handle real key exchange. Do not show key back to user.
-    state.connection.status='connected'; state.connection.method='openai';
-    $('aiMessage').textContent='Connected';
-    $('connStatus').textContent='● Connected';
-    $('aiModal').classList.remove('show');
+    const res = await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(compilePayload)});
+    if(!res.ok){
+      const txt = await res.text();
+      // BLOCKED: show reason, do not fake anything
+      $('compileStatus').textContent='BLOCKED';
+      state.compileBlocked=true;
+      $('commandSummary').textContent='LLM Command Service unreachable or returned error: '+res.status+'\n'+txt;
+      $('approvalTarget').textContent='BLOCKED';
+      $('approveBtn').disabled=true; $('renderBtn').disabled=true; $('renderStatus').textContent='BLOCKED';
+      return;
+    }
+    const data = await res.json();
+    // Expect data to be the structured LLM Command per contract. Do not assume shape — display safely.
+    state.compiledCommand = data;
+    $('compileStatus').textContent='Compiled';
+
+    // Show a helpful summary if present
+    let summary='';
+    if(data.command_text) summary += 'command_text:\n'+data.command_text+'\n\n';
+    // Show presence of required fields from contract and list missing ones
+    const required = ['intent','subject','identity','references','composition','environment','visual_style','color','lighting','typography','materials','camera','motion','negative_constraints','output_format','quality_requirements','command_text'];
+    const missing = [];
+    required.forEach(k=>{ if(!(k in data)) missing.push(k); });
+    summary += 'Fields present: '+Object.keys(data).join(', ')+'\n\n';
+    if(missing.length>0) summary += 'Validation WARNING: missing fields -> '+missing.join(', ')+"\n\n";
+    summary += 'Full response (JSON):\n'+JSON.stringify(data,null,2);
+
+    $('commandSummary').textContent = summary;
+
+    // Set approval target to a concise representation
+    $('approvalTarget').textContent = data.command_text ? data.command_text : ('Command object received — review JSON in Generated Command Summary');
+    $('approveBtn').disabled=false;
+    $('renderBtn').disabled=true; // enable after approval
+    $('renderStatus').textContent='Awaiting approval';
   }catch(err){
-    console.error('ai connect',err);
-    $('aiMessage').textContent='Connection failed: '+(err && err.body && err.body.message?err.body.message:JSON.stringify(err));
-    state.connection.status='failed';
+    console.error('compile error',err);
+    $('compileStatus').textContent='BLOCKED';
+    state.compileBlocked=true;
+    $('commandSummary').textContent='Compile failed: '+(err && err.message?err.message:JSON.stringify(err));
+    $('approvalTarget').textContent='BLOCKED';
+    $('approveBtn').disabled=true; $('renderBtn').disabled=true; $('renderStatus').textContent='BLOCKED';
   }
+}
+
+$('compileBtn').onclick=compileCommand;
+
+// Approve / Render wiring updated to operate on structured command
+$('approveBtn').onclick=async()=>{
+  if(state.compileBlocked || !state.compiledCommand){ alert('No compiled command available to approve (or compile is blocked).'); return; }
+  try{
+    $('approveBtn').textContent='Approving…'; $('approveBtn').disabled=true;
+    // Send approved command to runtime /approve — runtime must accept structured command. If it fails, report root cause.
+    const d = await controlFetch('/approve',{method:'POST',body:{approved_command:state.compiledCommand}});
+    $('approveBtn').textContent='APPROVE';
+    if(d && d.status==='ok'){ $('approvalTarget').textContent = 'Approved'; $('renderBtn').disabled=false; alert('Approved'); }
+    else{ alert('Approval response: '+JSON.stringify(d)); }
+  }catch(err){ console.error('approve failed',err); $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false; alert('Approve failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+}
+
+$('renderBtn').onclick=async()=>{
+  if(state.compileBlocked || !state.compiledCommand){ alert('No approved command to render.'); return; }
+  try{
+    $('renderBtn').textContent='Rendering…'; $('renderBtn').disabled=true; $('renderStatus').textContent='Rendering…';
+    const d = await controlFetch('/render',{method:'POST',body:{approved_command:state.compiledCommand}});
+    $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false;
+    if(d && d.jobId){ $('jobState').textContent='Rendering'; const el=document.createElement('div'); el.textContent=`Render job ${d.jobId} submitted`; $('jobList').prepend(el); $('renderStatus').textContent='Rendering: job '+d.jobId; }
+    else{ $('renderStatus').textContent='Render response: '+JSON.stringify(d); alert('Render response: '+JSON.stringify(d)); }
+  }catch(err){ console.error('render failed',err); $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false; $('renderStatus').textContent='Render failed: '+(err && err.body?JSON.stringify(err.body):String(err)); alert('Render failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
 }
 
 // image generation wiring (calls runtime endpoints, no fake success)
 $('genImage').onclick=async()=>{
   try{
     $('imagePreview').textContent='Generating…';
-    const payload={brief:$('briefText').textContent,options:{color:state.color}};
+    const payload={brief:$('nlBrief').value,options:{color:state.color}};
     const data = await controlFetch('/generate',{method:'POST',body:payload});
-    // Expect data to contain job id and preview url
     if(data && data.preview){
       const img=document.createElement('img'); img.src=data.preview; img.style.maxWidth='100%'; img.style.maxHeight='100%'; $('imagePreview').innerHTML=''; $('imagePreview').appendChild(img);
       $('jobState').textContent=(data.jobId||'running');
-      // Append job to job list
       const el=document.createElement('div'); el.textContent=`Job ${data.jobId||'(id)'} · ${data.status||'submitted'}`; $('jobList').prepend(el);
     }else{
       $('imagePreview').textContent='No preview returned';
@@ -292,41 +390,30 @@ $('genImage').onclick=async()=>{
   }catch(e){ $('imagePreview').textContent='Generate failed: '+(e && e.body?JSON.stringify(e.body):String(e)); }
 }
 
-$('saveImage').onclick=async()=>{
-  alert('Save will call runtime to persist artifact. This UI triggers backend save.');
-}
-
+$('saveImage').onclick=async()=>{ alert('Save will call runtime to persist artifact. This UI triggers backend save.'); }
 $('regenImage').onclick=async()=>{ $('genImage').click(); }
 
-// Approve / Render wiring
-$('approveBtn').onclick=async()=>{
-  try{
-    const payload={brief:$('briefText').textContent};
-    $('approveBtn').textContent='Approving…'; $('approveBtn').disabled=true;
-    const d=await controlFetch('/approve',{method:'POST',body:payload});
-    $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false;
-    if(d && d.status==='ok'){
-      alert('Approved');
-    }else{
-      alert('Approval response: '+JSON.stringify(d));
-    }
-  }catch(err){ $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false; alert('Approve failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
-}
+// AI Connect modal handlers - move connection details into CONTROL (do not expose key)
+$('aiConnectBtn').onclick=()=>{ $('aiModal').classList.add('show'); $('aiModal').setAttribute('aria-hidden','false'); $('aiMessage').textContent=''; $('aiKey').value=''; }
+$('aiCancel').onclick=()=>{ $('aiModal').classList.remove('show'); $('aiModal').setAttribute('aria-hidden','true'); }
 
-$('renderBtn').onclick=async()=>{
+$('aiSave').onclick=async()=>{
+  const key=$('aiKey').value.trim(); if(!key){ $('aiMessage').textContent='กรุณาใส่ API Key'; return; }
   try{
-    $('renderBtn').textContent='Rendering…'; $('renderBtn').disabled=true;
-    const payload={brief:$('briefText').textContent};
-    const d=await controlFetch('/render',{method:'POST',body:payload});
-    $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false;
-    if(d && d.jobId){ $('jobState').textContent='Rendering'; const el=document.createElement('div'); el.textContent=`Render job ${d.jobId} submitted`; $('jobList').prepend(el); }
-    else{ alert('Render response: '+JSON.stringify(d)); }
-  }catch(err){ $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false; alert('Render failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+    $('aiMessage').textContent='Connecting…';
+    const resp = await controlFetch('/ai/connect',{method:'POST',body:{provider:'openai',keyHint:key.slice(0,6)+'...'}});
+    state.connection.status='connected'; state.connection.method='openai';
+    $('aiMessage').textContent='Connected';
+    $('controlLog').textContent = 'AI connection established (runtime acknowledged).';
+    $('connectionDetail').textContent = 'Connected (provider: openai)';
+    $('aiModal').classList.remove('show');
+  }catch(err){ console.error('ai connect',err); $('aiMessage').textContent='Connection failed: '+(err && err.body && err.body.message?err.body.message:JSON.stringify(err)); state.connection.status='failed'; $('connectionDetail').textContent='Failed'; }
 }
 
 // health check on load
 (async()=>{
-  try{ const d=await controlFetch('/health'); if(d){ $('runtimeStatus').textContent='Healthy'; if(d.version) $('version').textContent=d.version; if(d.llm) document.querySelector('#runtimeChips .chip').textContent='LLM: '+(d.llm||'unknown'); }}catch(e){ $('runtimeStatus').textContent='Unreachable'; }
+  try{ const d=await controlFetch('/health'); if(d){ $('runtimeStatus').textContent='Healthy'; if(d.version) $('version').textContent=d.version; if(d.llm) document.querySelector('#runtimeChips .chip')?.textContent = 'LLM: '+d.llm; if(d.storage) document.querySelectorAll('#runtimeChips .chip')[1].textContent = 'Storage: '+d.storage; $('controlLog').textContent = JSON.stringify(d,null,2); $('runtimeStatus').textContent = d.status || 'Healthy'; $('llmStatus').textContent = d.llm || 'Unknown'; $('storageStatus').textContent = d.storage || 'Unknown'; }
+  }catch(e){ console.warn('health check failed',e); $('controlLog').textContent='Runtime health check failed: '+(e && e.body?JSON.stringify(e.body):String(e)); $('runtimeStatus').textContent='Unavailable'; }
 })();
 
 </script>
