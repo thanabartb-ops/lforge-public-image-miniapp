@@ -9,7 +9,7 @@
 <style>
 :root{--bg:#050712;--panel:rgba(7,11,24,.9);--line:rgba(145,190,255,.12);--text:#f7fbff;--muted:#9fb0c8;--blue:#25a7ff;--cyan:#55f3ff;--magenta:#ff2bd6;--violet:#7a4dff;--gold:#f5c56b}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{overflow-x:hidden}
-.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.18),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.14),transparent 28%)}
+.rgb{position:fixed;inset:-20%;z-index:-2;background:radial-gradient(circle at 15% 20%,rgba(37,167,255,.18),transparent 28%),radial-gradient(circle at 85% 20%,rgba(255,43,214,.14),transparent 28%),radial-gradient(circle at 50% 85%,rgba(122,77,255,.06),transparent 30%);filter:blur(36px);}
 .app-shell{max-width:1600px;margin:10px auto;padding:14px;display:flex;flex-direction:column;gap:12px}
 .topbar{height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px solid rgba(255,255,255,.02)}
 .brand{font-weight:800;letter-spacing:.06em;margin-right:8px}
@@ -35,10 +35,15 @@
 .kv{font-size:13px;color:var(--muted)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.02);border:1px solid var(--line)}
+.stepper{display:flex;gap:8px;align-items:center;margin:8px 0}
+.step{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.02);border:1px solid var(--line);font-size:13px}
+.step.active{background:linear-gradient(90deg,var(--blue),var(--cyan));color:#041022;font-weight:700}
 .modal{position:fixed;inset:0;background:rgba(2,4,8,.6);display:none;align-items:center;justify-content:center;z-index:60}
 .modal.show{display:flex}
 .modal-card{width:520px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);padding:16px;border-radius:12px;border:1px solid var(--line)}
 .input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text)}
+.file-row{display:flex;align-items:center;gap:8px}
+.file-name{font-size:13px;color:var(--muted)}
 @media(max-width:1100px){.grid-work{grid-template-columns:220px 1fr 280px}}
 @media(max-width:900px){.grid-work{grid-template-columns:1fr;}.activity{order:3}.sidebar{order:1}.main-work{order:2}}
 @media(max-width:480px){.topbar{height:64px;padding:10px;flex-wrap:wrap}.search{width:100%}}
@@ -83,15 +88,24 @@
         <div class="views">
           <div class="view active" id="view-core">
             <h2>REFERENCE</h2>
+
+            <div class="stepper" id="flowStepper">
+              <div class="step" id="stepReference">REFERENCE</div>
+              <div class="step" id="stepBrief">BRIEF</div>
+              <div class="step" id="stepApproval">APPROVAL</div>
+              <div class="step" id="stepRender">RENDER</div>
+            </div>
+
             <div id="referenceArea">
               <!-- Keep existing reference inputs (logo, character, typology, background, color, post) -->
             </div>
+
             <h3>BRIEF (Natural Language)</h3>
             <!-- Natural language brief input. Must be filled by user. -->
             <textarea id="nlBrief" class="input" rows="5" placeholder="Describe what you want in natural language (Thai or English). Do not rely on auto-generated text."></textarea>
             <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
               <button class="btn primary" id="compileBtn">COMPILE COMMAND</button>
-              <div class="kv">Status: <span id="compileStatus">Idle</span></div>
+              <div class="kv">Status: <span id="compileStatus">IDLE</span></div>
             </div>
 
             <h3 style="margin-top:12px">GENERATED COMMAND SUMMARY</h3>
@@ -110,7 +124,7 @@
             <div id="sourceImage" style="border:1px dashed var(--line);height:140px;border-radius:10px;display:flex;align-items:center;justify-content:center">No source selected</div>
 
             <h3 style="margin-top:12px">RENDER STATUS</h3>
-            <div id="renderStatus" class="kv">Idle</div>
+            <div id="renderStatus" class="kv">IDLE</div>
 
           </div>
 
@@ -187,7 +201,21 @@
 const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
 const $=(id)=>document.getElementById(id);
 const RUNTIME='https://wforge-image-mcp-wxx.thanabartb.workers.dev';
-let state={logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:'',connection:{status:'disconnected',method:null},compiledCommand:null,compileBlocked:false};
+
+// App state
+let state={
+  logo:null,character:null,typology:null,background:null,color:'#25A7FF',post:'',
+  connection:{status:'disconnected',method:null},
+  compiledCommand:null,compileBlocked:false,
+  approval:{status:'none',approvedCommand:null,version:0,timestamp:null},
+  status:'IDLE'
+};
+
+const STATUS={IDLE:'IDLE',COMPILING:'COMPILING',COMMAND_READY:'COMMAND_READY',APPROVAL_REQUIRED:'APPROVAL_REQUIRED',APPROVED:'APPROVED',SUBMITTING:'SUBMITTING',RENDERING:'RENDERING',COMPLETED:'COMPLETED',FAILED:'FAILED',BLOCKED:'BLOCKED'};
+
+function setStatus(s){ state.status=s; try{ $('compileStatus').textContent=s; }catch(e){}; try{$('renderStatus').textContent=s;}catch(e){}; if(s===STATUS.COMMAND_READY){ highlightStep('stepBrief'); } else if(s===STATUS.APPROVAL_REQUIRED){ highlightStep('stepApproval'); } else if(s===STATUS.APPROVED){ highlightStep('stepRender'); } }
+
+function highlightStep(id){ document.querySelectorAll('.step').forEach(el=>el.classList.remove('active')); const el=$(id); if(el) el.classList.add('active'); }
 
 // Basic wiring for tabs
 document.querySelectorAll('.sbtn').forEach(b=>b.addEventListener('click',e=>{
@@ -209,22 +237,22 @@ function buildReferenceControls(){
       <div>
         <label class="kv">Logo</label>
         <input id="logo" type="file" accept="image/*" />
-        <div id="logoName" class="kv"></div>
+        <div id="logoName" class="kv file-row"></div>
       </div>
       <div>
         <label class="kv">Character</label>
         <input id="character" type="file" accept="image/*" />
-        <div id="characterName" class="kv"></div>
+        <div id="characterName" class="kv file-row"></div>
       </div>
       <div>
         <label class="kv">Typology</label>
         <input id="typology" type="file" accept="image/*" />
-        <div id="typologyName" class="kv"></div>
+        <div id="typologyName" class="kv file-row"></div>
       </div>
       <div>
         <label class="kv">Background</label>
         <input id="background" type="file" accept="image/*" />
-        <div id="backgroundName" class="kv"></div>
+        <div id="backgroundName" class="kv file-row"></div>
       </div>
     </div>
     <div style="margin-top:10px">
@@ -241,15 +269,25 @@ function buildReferenceControls(){
     if(!el) return;
     el.addEventListener('change',e=>{
       const f=e.target.files && e.target.files[0];
-      if(f){ state[key]=f; $(name).textContent=f.name; update(); showSourceImage(); }
+      if(f){ state[key]=f; renderFileRow(name,key); update(); showSourceImage(); invalidateApproval(); }
     });
   }
   bindInput('logo','logoName','logo');
   bindInput('character','characterName','character');
   bindInput('typology','typologyName','typology');
   bindInput('background','backgroundName','background');
-  $('color').addEventListener('input',e=>{state.color=e.target.value.toUpperCase();update()});
-  $('post').addEventListener('input',e=>{state.post=e.target.value;update()});
+  $('color').addEventListener('input',e=>{state.color=e.target.value.toUpperCase();update(); invalidateApproval();});
+  $('post').addEventListener('input',e=>{state.post=e.target.value;update(); invalidateApproval();});
+}
+
+function renderFileRow(domId,key){
+  const container=$(domId);
+  container.innerHTML='';
+  const f=state[key];
+  if(!f) return;
+  const span=document.createElement('span'); span.className='file-name'; span.textContent=f.name;
+  const btnRemove=document.createElement('button'); btnRemove.className='btn'; btnRemove.style.padding='6px'; btnRemove.textContent='Remove'; btnRemove.onclick=()=>{ state[key]=null; $(domId).innerHTML=''; showSourceImage(); invalidateApproval(); };
+  container.appendChild(span); container.appendChild(btnRemove);
 }
 
 function showSourceImage(){
@@ -262,13 +300,31 @@ function showSourceImage(){
   img.style.maxHeight='120px'; img.style.maxWidth='100%';
   img.alt=f.name||'source';
   try{ img.src=URL.createObjectURL(f); }catch(e){ img.alt='(preview unavailable)'; }
-  container.appendChild(img);
+  // add authority label
+  const wrapper=document.createElement('div'); wrapper.style.display='flex'; wrapper.style.flexDirection='column'; wrapper.style.alignItems='center';
+  img.style.borderRadius='6px';
+  const auth=document.createElement('div'); auth.className='kv'; auth.style.marginTop='6px'; auth.textContent='SOURCE IMAGE (authority)';
+  wrapper.appendChild(img); wrapper.appendChild(auth);
+  container.appendChild(wrapper);
 }
 
 function update(){
-  // Show a simple reference summary (not a generated NL brief). NL brief must be provided by user.
+  // Keep reference summary; NL brief is separate
   const n=[state.logo,state.character,state.typology,state.background].filter(Boolean).length;
-  // Keep briefText behaviour removed — user must enter NL brief in textarea
+  // update any small UI fields if needed
+}
+
+function invalidateApproval(){
+  if(state.approval.status==='valid'){
+    // if compiledCommand equals approvedCommand, keep; else invalidate
+    if(state.approval.approvedCommand && state.compiledCommand){
+      const prev = JSON.stringify(state.approval.approvedCommand);
+      const cur = JSON.stringify(state.compiledCommand);
+      if(prev!==cur){ state.approval={status:'none',approvedCommand:null,version:0,timestamp:null}; $('approvalTarget').textContent='Approval invalidated (command changed)'; $('approveBtn').disabled=true; $('renderBtn').disabled=true; setStatus(STATUS.APPROVAL_REQUIRED); }
+    }else{
+      state.approval={status:'none',approvedCommand:null,version:0,timestamp:null}; $('approveBtn').disabled=true; $('renderBtn').disabled=true; setStatus(STATUS.APPROVAL_REQUIRED);
+    }
+  }
 }
 
 buildReferenceControls(); update();
@@ -290,11 +346,11 @@ async function compileCommand(){
   const nl = $('nlBrief').value.trim();
   if(!nl){ alert('กรุณาเขียน Natural Language Brief ก่อน (BRIEF)'); return; }
 
-  $('compileStatus').textContent='Compiling…';
+  setStatus(STATUS.COMPILING);
   $('commandSummary').textContent='Compiling command…';
-  state.compiledCommand=null; state.compileBlocked=false;
+  state.compiledCommand=null; state.compileBlocked=false; state.approval.status='none'; $('approveBtn').disabled=true; $('renderBtn').disabled=true;
 
-  // Prepare references: include basic metadata and attempt to include small inline data URLs for clarity
+  // Prepare references: include basic metadata
   const refs = [];
   const files = [{k:'logo',f:state.logo},{k:'character',f:state.character},{k:'typology',f:state.typology},{k:'background',f:state.background}];
   for(const it of files){ if(it.f){ refs.push({name:it.f.name,type:it.f.type||'image',role:it.k}); } }
@@ -308,7 +364,7 @@ async function compileCommand(){
     if(!res.ok){
       const txt = await res.text();
       // BLOCKED: show reason, do not fake anything
-      $('compileStatus').textContent='BLOCKED';
+      setStatus(STATUS.BLOCKED);
       state.compileBlocked=true;
       $('commandSummary').textContent='LLM Command Service unreachable or returned error: '+res.status+'\n'+txt;
       $('approvalTarget').textContent='BLOCKED';
@@ -318,29 +374,30 @@ async function compileCommand(){
     const data = await res.json();
     // Expect data to be the structured LLM Command per contract. Do not assume shape — display safely.
     state.compiledCommand = data;
-    $('compileStatus').textContent='Compiled';
 
-    // Show a helpful summary if present
-    let summary='';
-    if(data.command_text) summary += 'command_text:\n'+data.command_text+'\n\n';
-    // Show presence of required fields from contract and list missing ones
+    // Validate required fields
     const required = ['intent','subject','identity','references','composition','environment','visual_style','color','lighting','typography','materials','camera','motion','negative_constraints','output_format','quality_requirements','command_text'];
     const missing = [];
     required.forEach(k=>{ if(!(k in data)) missing.push(k); });
-    summary += 'Fields present: '+Object.keys(data).join(', ')+'\n\n';
-    if(missing.length>0) summary += 'Validation WARNING: missing fields -> '+missing.join(', ')+"\n\n";
-    summary += 'Full response (JSON):\n'+JSON.stringify(data,null,2);
 
+    let summary='';
+    if(data.command_text) summary += 'command_text:\n'+data.command_text+'\n\n';
+    summary += 'Fields present: '+Object.keys(data).join(', ')+'\n\n';
+    if(missing.length>0){ summary += 'Validation ERROR: missing required fields -> '+missing.join(', ')+"\n\n"; $('commandSummary').textContent = summary + 'Full response (JSON):\n'+JSON.stringify(data,null,2); setStatus(STATUS.FAILED); $('approvalTarget').textContent='Validation FAILED; cannot approve until required fields are present'; $('approveBtn').disabled=true; $('renderBtn').disabled=true; return; }
+
+    summary += 'Full response (JSON):\n'+JSON.stringify(data,null,2);
     $('commandSummary').textContent = summary;
 
-    // Set approval target to a concise representation
+    // compiled command ready
+    setStatus(STATUS.COMMAND_READY);
     $('approvalTarget').textContent = data.command_text ? data.command_text : ('Command object received — review JSON in Generated Command Summary');
-    $('approveBtn').disabled=false;
-    $('renderBtn').disabled=true; // enable after approval
-    $('renderStatus').textContent='Awaiting approval';
+    state.approval.status='none';
+    $('approveBtn').disabled=false; $('renderBtn').disabled=true;
+    setStatus(STATUS.APPROVAL_REQUIRED);
+
   }catch(err){
     console.error('compile error',err);
-    $('compileStatus').textContent='BLOCKED';
+    setStatus(STATUS.BLOCKED);
     state.compileBlocked=true;
     $('commandSummary').textContent='Compile failed: '+(err && err.message?err.message:JSON.stringify(err));
     $('approvalTarget').textContent='BLOCKED';
@@ -354,24 +411,37 @@ $('compileBtn').onclick=compileCommand;
 $('approveBtn').onclick=async()=>{
   if(state.compileBlocked || !state.compiledCommand){ alert('No compiled command available to approve (or compile is blocked).'); return; }
   try{
-    $('approveBtn').textContent='Approving…'; $('approveBtn').disabled=true;
+    $('approveBtn').textContent='Approving…'; $('approveBtn').disabled=true; setStatus(STATUS.SUBMITTING);
     // Send approved command to runtime /approve — runtime must accept structured command. If it fails, report root cause.
     const d = await controlFetch('/approve',{method:'POST',body:{approved_command:state.compiledCommand}});
     $('approveBtn').textContent='APPROVE';
-    if(d && d.status==='ok'){ $('approvalTarget').textContent = 'Approved'; $('renderBtn').disabled=false; alert('Approved'); }
-    else{ alert('Approval response: '+JSON.stringify(d)); }
-  }catch(err){ console.error('approve failed',err); $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false; alert('Approve failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+    if(d && d.status==='ok'){
+      state.approval.status='valid'; state.approval.approvedCommand = JSON.parse(JSON.stringify(state.compiledCommand)); state.approval.version = (state.approval.version||0)+1; state.approval.timestamp = new Date().toISOString();
+      $('approvalTarget').textContent = 'Approved (version '+state.approval.version+')';
+      $('renderBtn').disabled=false; setStatus(STATUS.APPROVED);
+      alert('Approved');
+    }else{
+      state.approval.status='none';
+      alert('Approval response: '+JSON.stringify(d));
+      setStatus(STATUS.FAILED);
+    }
+  }catch(err){ console.error('approve failed',err); $('approveBtn').textContent='APPROVE'; $('approveBtn').disabled=false; state.approval.status='none'; setStatus(STATUS.FAILED); alert('Approve failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
 }
 
 $('renderBtn').onclick=async()=>{
-  if(state.compileBlocked || !state.compiledCommand){ alert('No approved command to render.'); return; }
+  if(state.approval.status!=='valid'){ alert('Render requires a valid approval first.'); return; }
+  // Ensure approved command matches current compiled command
+  const approvedStr = JSON.stringify(state.approval.approvedCommand||{});
+  const compiledStr = JSON.stringify(state.compiledCommand||{});
+  if(approvedStr!==compiledStr){ alert('Approved command no longer matches the current compiled command; please re-approve.'); state.approval.status='none'; $('renderBtn').disabled=true; setStatus(STATUS.APPROVAL_REQUIRED); return; }
+
   try{
-    $('renderBtn').textContent='Rendering…'; $('renderBtn').disabled=true; $('renderStatus').textContent='Rendering…';
-    const d = await controlFetch('/render',{method:'POST',body:{approved_command:state.compiledCommand}});
+    $('renderBtn').textContent='Rendering…'; $('renderBtn').disabled=true; setStatus(STATUS.RENDERING);
+    const d = await controlFetch('/render',{method:'POST',body:{approved_command:state.approval.approvedCommand}});
     $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false;
-    if(d && d.jobId){ $('jobState').textContent='Rendering'; const el=document.createElement('div'); el.textContent=`Render job ${d.jobId} submitted`; $('jobList').prepend(el); $('renderStatus').textContent='Rendering: job '+d.jobId; }
-    else{ $('renderStatus').textContent='Render response: '+JSON.stringify(d); alert('Render response: '+JSON.stringify(d)); }
-  }catch(err){ console.error('render failed',err); $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false; $('renderStatus').textContent='Render failed: '+(err && err.body?JSON.stringify(err.body):String(err)); alert('Render failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
+    if(d && d.jobId){ $('jobState').textContent='Rendering'; const el=document.createElement('div'); el.textContent=`Render job ${d.jobId} submitted`; $('jobList').prepend(el); $('renderStatus').textContent='Rendering: job '+d.jobId; setStatus(STATUS.RENDERING); }
+    else{ $('renderStatus').textContent='Render response: '+JSON.stringify(d); setStatus(STATUS.FAILED); alert('Render response: '+JSON.stringify(d)); }
+  }catch(err){ console.error('render failed',err); $('renderBtn').textContent='RENDER'; $('renderBtn').disabled=false; $('renderStatus').textContent='Render failed: '+(err && err.body?JSON.stringify(err.body):String(err)); setStatus(STATUS.FAILED); alert('Render failed: '+(err && err.body?JSON.stringify(err.body):String(err))); }
 }
 
 // image generation wiring (calls runtime endpoints, no fake success)
@@ -412,8 +482,8 @@ $('aiSave').onclick=async()=>{
 
 // health check on load
 (async()=>{
-  try{ const d=await controlFetch('/health'); if(d){ $('runtimeStatus').textContent='Healthy'; if(d.version) $('version').textContent=d.version; if(d.llm) document.querySelector('#runtimeChips .chip')?.textContent = 'LLM: '+d.llm; if(d.storage) document.querySelectorAll('#runtimeChips .chip')[1].textContent = 'Storage: '+d.storage; $('controlLog').textContent = JSON.stringify(d,null,2); $('runtimeStatus').textContent = d.status || 'Healthy'; $('llmStatus').textContent = d.llm || 'Unknown'; $('storageStatus').textContent = d.storage || 'Unknown'; }
-  }catch(e){ console.warn('health check failed',e); $('controlLog').textContent='Runtime health check failed: '+(e && e.body?JSON.stringify(e.body):String(e)); $('runtimeStatus').textContent='Unavailable'; }
+  try{ const d=await controlFetch('/health'); if(d){ $('runtimeStatus').textContent='Healthy'; if(d.version) $('version').textContent=d.version; if(d.llm) document.querySelector('#runtimeChips .chip')?.textContent = 'LLM: '+d.llm; if(d.storage) document.querySelectorAll('#runtimeChips .chip')[1].textContent = 'Storage: '+d.storage; $('controlLog').textContent = JSON.stringify(d,null,2); $('runtimeStatus').textContent = d.status || 'Healthy'; $('llmStatus').textContent = d.llm || 'Unknown'; $('storageStatus').textContent = d.storage || 'Unknown'; setStatus(STATUS.IDLE); }
+  }catch(e){ console.warn('health check failed',e); $('controlLog').textContent='Runtime health check failed: '+(e && e.body?JSON.stringify(e.body):String(e)); $('runtimeStatus').textContent='Unavailable'; setStatus(STATUS.BLOCKED); }
 })();
 
 </script>
